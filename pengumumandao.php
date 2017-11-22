@@ -4,10 +4,10 @@ include "connect.php";
 
 switch ($_POST['aksi']) {
   case 'buat':
-    $return = buat_tb($db);
+    $return = buat($db);
     break;
-  case 'ubah_user':
-    $return = ubah_user($db);
+  case 'update':
+    $return = ubah($db);
     break;
   case 'lihat':
     $return = lihat($db);
@@ -34,17 +34,14 @@ $db = null;
 
 echo json_encode($data);
 
-function buat_tb($db){
+function buat($db){
 
-  $user_id = get1Val($db, "PENGGUNA", "email", $_POST['email_user'], "id");
-
-  $query = $db->prepare("INSERT INTO TAMAN_BACA(nama, alamat, twitter, facebook, id_user)
+  $query = $db->prepare("INSERT INTO PENGUMUMAN (id_admin,judul,isi,waktu)
                         VALUES(
-                          '".$_POST['nama']."',
-                          '".$_POST['alamat']."',
-                          '".$_POST['twitter']."',
-                          '".$_POST['facebook']."',
-                          ".$user_id."
+                          ".$_POST['id_admin'].",
+                          '".$_POST['judul']."',
+                          '".$_POST['isi']."',
+                          CURRENT_TIMESTAMP
                         )");
 
   $success = $query->execute();
@@ -52,18 +49,15 @@ function buat_tb($db){
   $data["success"] = $success;
   $data["posts"] = array();
   if ($success){
-    $id_tb = $db->lastInsertId();
-    $query = $db->prepare("UPDATE PENGGUNA SET id_taman_baca =".$id_tb." WHERE id  =".$user_id);
-    $success = $query->execute();
-    array_push($data["posts"], "Sukses", $id_tb);
+    array_push($data["posts"], "Sukses");
   }
 
   return $data;
 }
 
-function ubah_user($db){
+function ubah($db){
 
-  $query = $db->prepare("UPDATE TAMAN_BACA SET id_user = ".$_POST['id_post']." WHERE id = ".$_POST['id_tb']);
+  $query = $db->prepare("UPDATE PENGUMUMAN SET id_admin = ".$_POST['id_admin'].", isi = '".$_POST['isi']."', judul = '".$_POST['judul']."', waktu = CURRENT_TIMESTAMP WHERE id = ".$_POST['id']);
 
   $success = $query->execute();
   $data = array();
@@ -79,8 +73,7 @@ function ubah_user($db){
 }
 
 function lihat($db){
-  $sth = $db->prepare("SELECT TAMAN_BACA.id AS id, PENGGUNA.id AS id_user, PENGGUNA.nama AS nama_user, TAMAN_BACA.nama AS nama_tb, TAMAN_BACA.alamat AS alamat, twitter, facebook
-     FROM TAMAN_BACA, PENGGUNA WHERE id_user = PENGGUNA.id AND TAMAN_BACA.id = ".$_POST['id']);
+  $sth = $db->prepare("SELECT *, judul as nama FROM PENGUMUMAN WHERE id = ".$_POST['id']);
   $sth->execute();
   $success = $sth->fetchAll();
   $data = array();
@@ -94,7 +87,7 @@ function lihat($db){
 }
 
 function hapus($db){
-  $success = deleteTableContent($db, "TAMAN_BACA", $_POST['del_id']);
+  $success = deleteTableContent($db, "PENGUMUMAN", $_POST['del_id']);
   $data = array();
   $data["success"] = $success;
   $data["posts"] = array();
