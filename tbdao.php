@@ -70,6 +70,10 @@ function ubah_user($db){
   $data["success"] = $success;
   $data["posts"] = array();
   if ($success){
+    $query = $db->prepare("UPDATE PENGGUNA SET id_taman_baca = NULL WHERE id = ".$_POST['id_pre']);
+    $success = $query->execute();
+    $query = $db->prepare("UPDATE PENGGUNA SET id_taman_baca = ".$_POST['id_tb']." WHERE id = ".$_POST['id_post']);
+    $success = $query->execute();
     array_push($data["posts"], "Sukses");
   } else {
     array_push($data["posts"], "Gagal, Silahkan hubungi admin");
